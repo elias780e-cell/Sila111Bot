@@ -1,0 +1,137 @@
+import os
+import random
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
+
+BOT_TOKEN = os.environ.get("8701736064:AAFspv515EaaH2p0-kBBoaH4owjrTt89ZU0")
+BOT_NAME = "سيلا"
+game_data = {}
+
+START_TEXT = f"""
+━━━━━━━━
+    🔥 {BOT_NAME} 🔥
+━━━━━━━━
+
+أنا {BOT_NAME}، بوتك الفخم المتكامل 🤖✨
+
+⚡ سرعة - قوة - متعة
+🎮 ألعاب
+🏦 البنوك
+🐱 كت
+💬 ردود تلقائية
+━━━━━━━━
+
+اختر اللي يناسبك من القائمة تحت:
+"""
+
+TRUTH_LIST = [
+    "وش أكثر شيء محرج صار لك؟",
+    "مين آخر شخص بحثت عنه بالانستا؟",
+    "عندك كراش حالياً؟ مين هو؟",
+    "وش أكثر كذبة قلتها وصدقوها؟",
+    "لو تعطيك فرصة تغير شيء فيك، وش بتغير؟"
+]
+
+DARE_LIST = [
+    "ارسل فويس تقول فيه أنا فخم 🔥",
+    "غير اسمك بالتليجرام لـ Sila King لمدة 5 دقايق",
+    "اكتب كومنت في أول قناة عندك: Sila Bot الأفضل",
+    "ارسل آخر صورة بالاستديو",
+    "اكتب قصيدة من سطرين عن البوت"
+]
+
+CAT_IMAGES = [
+    "https://cataas.com/cat",
+    "https://cataas.com/cat/says/Meow",
+    "https://cataas.com/cat/says/Cute",
+    "https://cataas.com/cat/says/Sila%20Bot"
+]
+
+BANKS = [
+    "مصرف الراجحي",
+    "البنك الأهلي السعودي",
+    "بنك الرياض",
+    "بنك الإنماء",
+    "بنك ساب",
+    "بنك البلاد",
+    "البنك السعودي الفرنسي",
+    "بنك الجزيرة"
+]
+
+BANK_MESSAGES = [
+    "مبروك! رصيدك {balance} ريال 💰",
+    "للأسف رصيدك {balance} ريال، شد حيلك 😭",
+    "حسابك في {bank} وصل {balance} ريال، تقدر تشتري شاورما اليوم",
+    "تحديث: تم إيداع {balance} ريال في حسابك بـ {bank} ✨",
+    "رصيدك {balance} ريال... يكفي لكوفي بس ☕"
+]
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [
+        [InlineKeyboardButton("🎮 الألعاب", callback_data="games_menu")],
+        [InlineKeyboardButton("🏦 البنوك", callback_data="banks")],
+        [InlineKeyboardButton("💬 الردود", callback_data="replies")],
+        [InlineKeyboardButton("🐱 كت", callback_data="cat")],
+        [InlineKeyboardButton("🎵 أغنية", callback_data="song")],
+        [InlineKeyboardButton("ℹ️ عن البوت", callback_data="info")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text(START_TEXT, reply_markup=reply_markup)
+
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    user_id = query.from_user.id
+
+    if query.data == "games_menu":
+        keyboard = [
+            [InlineKeyboardButton("🎯 تخمين الرقم", callback_data="guess")],
+            [InlineKeyboardButton("✊ حجر ورقة مقص", callback_data="rps")],
+            [InlineKeyboardButton("❌⭕ لعبة XO", callback_data="tictactoe")],
+            [InlineKeyboardButton("🧠 أسئلة سريعة", callback_data="quiz")],
+            [InlineKeyboardButton("🔥 لعبة الجرأة", callback_data="truth_dare")],
+            [InlineKeyboardButton("🔙 رجوع", callback_data="back")]
+        ]
+        await query.edit_message_text("🎮 قائمة الألعاب:", reply_markup=InlineKeyboardMarkup(keyboard))
+
+    elif query.data == "banks":
+        bank = random.choice(BANKS)
+        balance = random.randint(0, 50000)
+        message = random.choice(BANK_MESSAGES).format(bank=bank, balance=f"{balance:,}")
+        keyboard = [
+            [InlineKeyboardButton("🔄 جرب مرة ثانية", callback_data="banks")],
+            [InlineKeyboardButton("🔙 رجوع", callback_data="back")]
+        ]
+        await query.edit_message_text(f"🏦 فحص البنك\n\n{message}", 
+                                      reply_markup=InlineKeyboardMarkup(keyboard), 
+                                      parse_mode="Markdown")
+
+    elif query.data == "cat":
+        cat_url = random.choice(CAT_IMAGES)
+        await query.edit_message_text("🐱 جاري جلب قطوة...")
+        await context.bot.send_photo(chat_id=query.message.chat_id, photo=cat_url, caption="خذ لك قطوة لطيفة 🥺")
+        keyboard = [[InlineKeyboardButton("🔙 رجوع", callback_data="back")]]
+        await context.bot.send_message(chat_id=query.message.chat_id, text="تبغى قطوة ثانية؟", reply_markup=InlineKeyboardMarkup(keyboard))
+        elif query.data == "truth_dare":
+        keyboard = [
+            [InlineKeyboardButton("🗣️ صراحة", callback_data="truth")],
+            [InlineKeyboardButton("🔥 جرأة", callback_data="dare")],
+            [InlineKeyboardButton("🔙 رجوع", callback_data="games_menu")]
+        ]
+        await query.edit_message_text("اختر: صراحة ولا جرأة؟", reply_markup=InlineKeyboardMarkup(keyboard))
+
+    elif query.data == "truth":
+        question = random.choice(TRUTH_LIST)
+        await query.edit_message_text(f"🗣️ صراحة:\n{question}", parse_mode="Markdown")
+
+    elif query.data == "dare":
+        dare = random.choice(DARE_LIST)
+        await query.edit_message_text(f"🔥 جرأة:\n{dare}", parse_mode="Markdown")
+
+    elif query.data == "replies":
+        replies_text = """
+💬 نظام الردود التلقائي
+
+اكتب أي كلمة من هذي والبوت بيرد عليك:
+
+-
