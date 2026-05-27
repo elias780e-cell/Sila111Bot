@@ -7,7 +7,7 @@ from flask import Flask
 import threading
 
 logging.basicConfig(level=logging.INFO)
-TOKEN = os.getenv("Sila111Bot")
+TOKEN = os.getenv("8701736064:AAFspv515EaaH2p0-kBBoaH4owjrTt89ZU0")
 
 # تخزين مؤقت للبيانات - يتغير لو رسترت البوت
 user_points = {}
