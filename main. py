@@ -1,0 +1,52 @@
+import os
+import random
+import logging
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
+from flask import Flask
+import threading
+
+logging.basicConfig(level=logging.INFO)
+TOKEN = os.getenv("Sila111Bot")
+
+# تخزين مؤقت للبيانات - يتغير لو رسترت البوت
+user_points = {}
+game_sessions = {}
+
+def main_menu():
+    keyboard = [
+        [InlineKeyboardButton("🎮 الألعاب", callback_data= games ),
+         InlineKeyboardButton("🏆 النقاط", callback_data= points )],
+        [InlineKeyboardButton("📝 الأوامر", callback_data= help ),
+         InlineKeyboardButton("👤 حسابي", callback_data= profile )],
+        [InlineKeyboardButton("ℹ️ حول البوت", callback_data= about )]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+def games_menu():
+    keyboard = [
+        [InlineKeyboardButton("❓ سؤال وجواب", callback_data= quiz ),
+         InlineKeyboardButton("🎲 تخمين الرقم", callback_data= guess )],
+        [InlineKeyboardButton("✂️ حجر ورقة مقص", callback_data= rps ),
+         InlineKeyboardButton("🎯 صراحة وجرأة", callback_data= truth )],
+        [InlineKeyboardButton("🔙 رجوع", callback_data= back )]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    welcome_text = f"🔥 هلا والله {user.first_name} 🔥\n\nأنا بوت سيلا اهلا بك  ، فيه ألعاب ومسابقات وكل شي فخم\nاختار من تحت وابدأ المتعة"
+    await update.message.reply_text(welcome_text, reply_markup=main_menu())
+
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    user_id = query.from_user.id
+    
+    if query.data ==  games :
+        await query.edit_message_text("🎮 اختار اللعبة اللي تبغاها:", reply_markup=games_menu())
+    
+    elif query.data ==  quiz :
+        questions = [
+            {"q": "كم لون في قوس قزح؟", "a": "7"},
+            {"q": "وش عاصمة السعودية؟", "
